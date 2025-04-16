@@ -19,7 +19,7 @@ class MLIPBlocker:
     A class for blocking/allowing IP addresses based on ML model predictions.
     """
     
-    def __init__(self, model_path=None, blocklist_path=None, 
+    def __init__(self, model_path='models/model.joblib', blocklist_path=None, 
                  block_threshold=0.5, cache_timeout=10,
                  trusted_ips=None, blocked_ips=None):
         """

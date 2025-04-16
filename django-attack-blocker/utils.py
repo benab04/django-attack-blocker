@@ -60,7 +60,7 @@ def process(df):
     X = df
 
 
-    ct = joblib.load('column_transformer.pkl')
+    ct = joblib.load('models/column_transformer.pkl')
     X = np.array(ct.transform(X))
 
     sc = StandardScaler() 

@@ -4,7 +4,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="django-attack-blocker",
+    name="django_attack_blocker",
     version="0.1.0",
     author="Ben Abraham Biju",
     author_email="benabrahambiju@gmail.com",
@@ -14,7 +14,7 @@ setup(
     url="https://github.com/yourusername/django-ml-ipblocker",
     packages=find_packages(),
     package_data={
-        'django_ml_ipblocker': [
+        'django_attack_blocker': [
             'models/*.pkl', 
             'models/*.joblib'
         ],

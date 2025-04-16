@@ -1,6 +1,3 @@
-# django_ml_ipblocker/core.py
-
-import pickle
 from joblib import load
 import pandas as pd
 import numpy as np
@@ -20,7 +17,7 @@ class MLIPBlocker:
     """
     
     def __init__(self, model_path=None, encoder_path=None, blocklist_path=None, 
-                 block_threshold=0.5, cache_timeout=10,
+                 block_threshold=0.5, block_timeout=None,
                  trusted_ips=None, blocked_ips=None):
         """
         Initialize the IP Blocker with settings.
@@ -29,14 +26,14 @@ class MLIPBlocker:
         - model_path: Path to pickled ML model file
         - blocklist_path: Path to a file with IPs to always block
         - block_threshold: Threshold above which to block (for models that return probabilities)
-        - cache_timeout: How long to keep IP block decisions cached (in seconds)
+        - block_timeout: How long to keep IP block decisions cached (in seconds)
         - trusted_ips: List of IP addresses or CIDR ranges to always allow
         - blocked_ips: List of IP addresses or CIDR ranges to always block
         """
         self.model = self._load_model(model_path) if model_path else None
         self.encoder_path = encoder_path
         self.block_threshold = block_threshold
-        self.cache_timeout = cache_timeout
+        self.cache_timeout = block_timeout
         
         # Load permanent blocklist if provided
         self.blocklist = set()
@@ -203,7 +200,8 @@ class MLIPBlocker:
                     # request_data['body'] = body
             except:
                 # Not JSON or empty body, that's fine
-                pass
+                print("No logs were detected in the request body.")
+                return False
                 
             # Add headers (excluding sensitive ones)
             # headers = {}
@@ -243,7 +241,10 @@ class MLIPBlocker:
 
             # Cache the decision
             if block_decision:
-                self.block_ip(ip)
+                if self.cache_timeout:
+                    cache.set(cache_key, block_decision, self.cache_timeout)
+                else:
+                    self.block_ip(ip)
             # cache.set(cache_key, block_decision, self.cache_timeout)
             
             # Update stats

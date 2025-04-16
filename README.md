@@ -44,8 +44,7 @@ from django_attack_blocker import with_ip_blocking
 blocker = MLIPBlocker(
     model_path='path/to/model.pkl',
     encoder_path='path/to/encoder.pkl',
-    block_threshold=0.8,  # Confidence threshold for blocking
-    block_timeout=3600,   # Block duration in seconds
+    block_threshold=0.5,  # Confidence threshold for blocking
     trusted_ips=['127.0.0.1', '192.168.1.0/24'],  # Always allow these IPs
     blocked_ips=['10.0.0.5']  # Always block these IPs
 )

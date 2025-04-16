@@ -49,7 +49,7 @@ blocker = MLIPBlocker(
     blocked_ips=['10.0.0.5']  # Always block these IPs
 )
 
-# Protect a view uisng decorator
+# Protect a view using decorator
 @with_ip_blocking(blocker)
 def my_protected_view(request):
     # Your view code here

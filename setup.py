@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="django_attack_blocker",
-    version="1.0.0",
+    version="1.0.1",
     author="Ben Abraham Biju",
     author_email="benabrahambiju@gmail.com",
     description="ML-based IP blocking system for Django",

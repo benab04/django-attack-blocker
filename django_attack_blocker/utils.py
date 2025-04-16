@@ -9,7 +9,7 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-def process(df):
+def process(encoder_path,df):
     # Rearrange the columns to match the specified order
     desired_order = ['dur', 'proto', 'service', 'state', 'spkts', 'dpkts', 'sbytes',
                             'dbytes', 'rate', 'sttl', 'dttl', 'sload', 'dload', 'sloss', 'dloss',
@@ -60,7 +60,7 @@ def process(df):
     X = df
 
 
-    ct = joblib.load('models/column_transformer.pkl')
+    ct = joblib.load(encoder_path)
     X = np.array(ct.transform(X))
 
     sc = StandardScaler() 

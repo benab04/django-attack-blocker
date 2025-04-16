@@ -5,13 +5,13 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="django_attack_blocker",
-    version="0.1.0",
+    version="0.1.3",
     author="Ben Abraham Biju",
     author_email="benabrahambiju@gmail.com",
     description="ML-based IP blocking system for Django",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/django-ml-ipblocker",
+    url="https://github.com/benab04/django-attack-blocker",
     packages=find_packages(),
     package_data={
         'django_attack_blocker': [

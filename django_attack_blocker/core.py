@@ -19,7 +19,7 @@ class MLIPBlocker:
     A class for blocking/allowing IP addresses based on ML model predictions.
     """
     
-    def __init__(self, model_path='models/model.joblib', blocklist_path=None, 
+    def __init__(self, model_path=None, encoder_path=None, blocklist_path=None, 
                  block_threshold=0.5, cache_timeout=10,
                  trusted_ips=None, blocked_ips=None):
         """
@@ -34,6 +34,7 @@ class MLIPBlocker:
         - blocked_ips: List of IP addresses or CIDR ranges to always block
         """
         self.model = self._load_model(model_path) if model_path else None
+        self.encoder_path = encoder_path
         self.block_threshold = block_threshold
         self.cache_timeout = cache_timeout
         
@@ -217,7 +218,7 @@ class MLIPBlocker:
                 
             # Prepare data for model
             df = json_to_dataframe(body)
-            X = process(df)
+            X = process(self.encoder_path,df)
             
             # Get model prediction
             prediction = self.model.predict(X)
@@ -243,7 +244,7 @@ class MLIPBlocker:
             # Cache the decision
             if block_decision:
                 self.block_ip(ip)
-            cache.set(cache_key, block_decision, self.cache_timeout)
+            # cache.set(cache_key, block_decision, self.cache_timeout)
             
             # Update stats
             if block_decision:

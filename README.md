@@ -18,6 +18,7 @@ This middleware integrates seamlessly with Django applications and can be used t
 - Built-in caching of block decisions for performance
 - Support for trusted IP ranges
 - Detailed statistics tracking
+- Manual IP management functions for block/unblock operations
 
 ## Installation
 
@@ -62,12 +63,49 @@ The complete list of parameters are shown in this table
 | ----------------- | ------ | ---------- | ------------------------------------------------------------------------------------------------------------------ |
 | `model_path`      | string | _Required_ | Path to the pickled ML model file (.pkl)                                                                           |
 | `encoder_path`    | string | _Required_ | Path to the pickled encoder file (.pkl)                                                                            |
+| `blocklist_path`  | string | None       | Path to a file with IPs to always block                                                                            |
 | `block_threshold` | float  | 0.5        | Confidence threshold for blocking decisions (0.0-1.0), where higher values require more confidence before blocking |
 | `block_timeout`   | int    | None       | Time duration in seconds for which an IP stays blocked. If None, blocks the IP permanently                         |
 | `trusted_ips`     | list   | None       | List of IP addresses or CIDR ranges (e.g. '192.168.1.0/24') that will always be allowed                            |
 | `blocked_ips`     | list   | None       | List of IP addresses or CIDR ranges that will always be blocked                                                    |
 
 > **Note**: The model and encoder files (`model.joblib` and `encoder.pkl`) can be found in the `weights` directory of the repository.
+
+### Using Different Block Types
+
+The blocker now supports different types of IP blocking:
+
+```python
+# Use temporary blocking that relies on the cache timeout
+@with_ip_blocking(blocker, type="temporary")
+def temporarily_protected_view(request):
+    return JsonResponse({"status": "temporary protection active"})
+
+# Use permanent blocking that will persist until server restart
+@with_ip_blocking(blocker, type="permanent")
+def permanently_protected_view(request):
+    return JsonResponse({"status": "permanent protection active"})
+```
+
+### Manual IP Management Functions
+
+```python
+# Import the helper functions
+from django_attack_blocker import block_ip, unblock_ip, get_blocker_stats
+
+# Block an IP temporarily
+block_ip(blocker, ip='192.168.1.100', duration=3600)  # Block for 1 hour
+
+# Block an IP permanently
+block_ip(blocker, ip='192.168.1.101')  # No duration means permanent
+
+# Unblock an IP address
+unblock_ip(blocker, ip='192.168.1.100')
+
+# Get statistics about blocked requests
+stats = get_blocker_stats(blocker)
+print(stats)
+```
 
 The model expects logs in a specific format, with the following columns required:
 
@@ -133,27 +171,43 @@ The request body should contain a "log" object with the network traffic features
 }
 ```
 
-## Advanced Usage
-
-### Manual IP Management
+## Creating an Example Django View with IP Blocking
 
 ```python
-# Manually block an IP address temporarily
-blocker.block_ip('192.168.1.100', duration=3600)  # Block for 1 hour
+from django.http import JsonResponse
+from django_attack_blocker import MLIPBlocker, with_ip_blocking, block_ip, unblock_ip
 
-# Permanently block an IP address
-blocker.block_ip('192.168.1.101')
+# Initialize the blocker
+blocker = MLIPBlocker(
+    model_path='path/to/model.pkl',
+    encoder_path='path/to/encoder.pkl',
+    block_threshold=0.7
+)
 
-# Unblock an IP address
-blocker.unblock_ip('192.168.1.100')
-```
+# Protected view with temporary blocking
+@with_ip_blocking(blocker, type="temporary")
+def process_traffic(request):
+    # Process the request
+    return JsonResponse({"status": "processed"})
 
-### Getting Statistics
+# Admin view for manual IP management
+def manage_ips(request):
+    action = request.GET.get('action')
+    ip = request.GET.get('ip')
+    duration = request.GET.get('duration')
 
-```python
-# Get statistics about blocked requests
-stats = blocker.get_stats()
-print(stats)
+    if action == 'block':
+        if duration:
+            block_ip(blocker, ip=ip, duration=int(duration))
+            return JsonResponse({"status": f"Blocked {ip} for {duration} seconds"})
+        else:
+            block_ip(blocker, ip=ip)
+            return JsonResponse({"status": f"Blocked {ip} permanently"})
+    elif action == 'unblock':
+        unblock_ip(blocker, ip=ip)
+        return JsonResponse({"status": f"Unblocked {ip}"})
+    else:
+        return JsonResponse({"error": "Invalid action"}, status=400)
 ```
 
 ## UNSW Dataset
@@ -170,7 +224,10 @@ This library is designed to work with models trained on the UNSW-NB15 dataset, w
 - Shellcode
 - Worms
 
-The library blocks that address either permanently in a session or caches it for the specified block time. Default is to be blocked permanently, till next restart of the server.
+The library can block IP addresses either permanently or temporarily:
+
+- Permanent blocking: The IP is added to the blocklist and stays there until the server restarts or the IP is manually unblocked.
+- Temporary blocking: The IP address is cached for the specified block time (set via `block_timeout`).
 
 ## License
 

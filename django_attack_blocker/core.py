@@ -137,7 +137,7 @@ class MLIPBlocker:
     
    
     
-    def should_block(self, request, extra_data=None):
+    def should_block(self, request, type="temporary"):
         """
         Determine if request should be blocked based on IP and other data.
         
@@ -163,20 +163,22 @@ class MLIPBlocker:
             return False
         
         # Always block IPs in blocklist
+        
         if self._check_blocked_ips(ip):
             self.stats['blocked_requests'] += 1
             return True
         
+        if type == "temporary":
         # Check cache for previous decisions
-        cache_key = f"ipblocker:decision:{ip}"
-        cached_decision = cache.get(cache_key)
-        if cached_decision is not None:
-            self.stats['cache_hits'] += 1
-            if cached_decision:
-                self.stats['blocked_requests'] += 1
-            else:
-                self.stats['allowed_requests'] += 1
-            return cached_decision
+            cache_key = f"ipblocker:decision:{ip}"
+            cached_decision = cache.get(cache_key)
+            if cached_decision is not None:
+                self.stats['cache_hits'] += 1
+                if cached_decision:
+                    self.stats['blocked_requests'] += 1
+                else:
+                    self.stats['allowed_requests'] += 1
+                return cached_decision
         
         # No model means we can't make ML-based decisions
         if self.model is None:
@@ -241,7 +243,7 @@ class MLIPBlocker:
 
             # Cache the decision
             if block_decision:
-                if self.cache_timeout:
+                if type == "temporary" and self.cache_timeout:
                     cache.set(cache_key, block_decision, self.cache_timeout)
                 else:
                     self.block_ip(ip)
@@ -312,7 +314,7 @@ def block_if_malicious(blocker, view_func):
     return wrapped_view
 
 
-def with_ip_blocking(blocker):
+def with_ip_blocking(blocker, type="temporary"):
     """
     Decorator factory to use with Django views
     
@@ -323,7 +325,7 @@ def with_ip_blocking(blocker):
     """
     def decorator(view_func):
         def wrapped_view(request, *args, **kwargs):
-            if blocker.should_block(request):
+            if blocker.should_block(request, type):
                 return JsonResponse({
                     "error": "Access denied",
                     "message": "Your request has been blocked"
@@ -331,3 +333,44 @@ def with_ip_blocking(blocker):
             return view_func(request, *args, **kwargs)
         return wrapped_view
     return decorator
+
+
+def get_blocker_stats(blocker):
+    """
+    Get statistics from the blocker
+    """
+    return blocker.get_stats()
+
+def unblock_ip(blocker, ip=None):
+    """
+    Block an IP address using the blocker
+    """
+    
+    try:
+        if ip is None:
+            raise ValueError("No IP address provided or could be determined from the request")
+        print(f"Unblocking {ip}")
+        blocker.unblock_ip(ip)
+    except Exception as e:
+        print(e)
+    
+    
+    
+def block_ip(blocker, ip=None, duration =None):
+    """
+    Block an IP address using the blocker
+    """
+    
+    try:
+        if ip is None:
+            raise ValueError("No IP address provided or could be determined from the request")
+        if duration:
+            print(f"Blocking {ip} for {duration} seconds")
+        else:
+            print(f"Blocking {ip} permanently")
+            
+        blocker.block_ip(ip, duration)
+        
+    except Exception as e:
+        print(e)
+    

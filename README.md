@@ -30,7 +30,7 @@ pip install django_attack_blocker
 
 The required model and encoder files can be downloaded from the repository:
 
-- `model.pkl`: The trained machine learning model
+- `model.joblib`: The trained machine learning model
 - `encoder.pkl`: The feature encoder for preprocessing
 
 ## Usage
@@ -43,7 +43,7 @@ from django_attack_blocker import with_ip_blocking
 
 # Initialize the blocker with your model
 blocker = MLIPBlocker(
-    model_path='path/to/model.pkl',
+    model_path='path/to/model.joblib',
     encoder_path='path/to/encoder.pkl',
     block_threshold=0.5,  # Confidence threshold for blocking
     trusted_ips=['127.0.0.1', '192.168.1.0/24'],  # Always allow these IPs
@@ -61,7 +61,7 @@ The complete list of parameters are shown in this table
 
 | Parameter         | Type   | Default    | Description                                                                                                        |
 | ----------------- | ------ | ---------- | ------------------------------------------------------------------------------------------------------------------ |
-| `model_path`      | string | _Required_ | Path to the pickled ML model file (.pkl)                                                                           |
+| `model_path`      | string | _Required_ | Path to the pickled ML model file (.joblib)                                                                        |
 | `encoder_path`    | string | _Required_ | Path to the pickled encoder file (.pkl)                                                                            |
 | `blocklist_path`  | string | None       | Path to a file with IPs to always block                                                                            |
 | `block_threshold` | float  | 0.5        | Confidence threshold for blocking decisions (0.0-1.0), where higher values require more confidence before blocking |
@@ -179,7 +179,7 @@ from django_attack_blocker import MLIPBlocker, with_ip_blocking, block_ip, unblo
 
 # Initialize the blocker
 blocker = MLIPBlocker(
-    model_path='path/to/model.pkl',
+    model_path='path/to/model.joblib',
     encoder_path='path/to/encoder.pkl',
     block_threshold=0.7
 )

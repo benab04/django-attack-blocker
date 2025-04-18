@@ -23,7 +23,7 @@ This middleware integrates seamlessly with Django applications and can be used t
 ## Installation
 
 ```bash
-pip install django_attack_blocker
+pip install django-attack-blocker
 ```
 
 ## Required Files

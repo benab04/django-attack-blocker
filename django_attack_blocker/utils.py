@@ -35,7 +35,6 @@ def process(encoder_path,df):
             
     df_numeric = df.select_dtypes(include=[np.number])
 
-    df_before = df_numeric.copy()
 
     for feature in df_numeric.columns:
         if df_numeric[feature].nunique()>50:

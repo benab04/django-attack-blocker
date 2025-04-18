@@ -126,15 +126,6 @@ class MLIPBlocker:
             logger.warning(f"Invalid IP format: {ip}")
             return False
     
-    # def json_to_dataframe(self, json_data):
-    #     """Convert JSON to pandas DataFrame"""
-    #     if isinstance(json_data, dict):
-    #         return pd.DataFrame([json_data])
-    #     elif isinstance(json_data, list):
-    #         return pd.DataFrame(json_data)
-    #     else:
-    #         raise ValueError("Input must be a dict or list")
-    
    
     
     def should_block(self, request, type="temporary"):
@@ -185,16 +176,7 @@ class MLIPBlocker:
             self.stats['allowed_requests'] += 1
             return False
         
-        # Build features for model
         try:
-            # request_data = {
-            #     'ip': ip,
-            #     'path': request.path,
-            #     'method': request.method,
-            #     'user_agent': request.META.get('HTTP_USER_AGENT', ''),
-            #     'timestamp': datetime.now().isoformat(),
-            # }
-            
             # Add request body if it exists and is JSON
             try:
                 if request.body:
@@ -205,24 +187,12 @@ class MLIPBlocker:
                 print("No logs were detected in the request body.")
                 return False
                 
-            # Add headers (excluding sensitive ones)
-            # headers = {}
-            # for key, value in request.META.items():
-            #     if key.startswith('HTTP_') and key not in ('HTTP_COOKIE', 'HTTP_AUTHORIZATION'):
-            #         headers[key] = value
-            # request_data['headers'] = headers
-            
-            # Add extra data if provided
-            # if extra_data:
-            #     request_data.update(extra_data)
-                
             # Prepare data for model
             df = json_to_dataframe(body)
             X = process(self.encoder_path,df)
             
             # Get model prediction
             prediction = self.model.predict(X)
-            # Print the attributes of the model
             # Handle different model outputs
             if hasattr(self.model, 'predict_proba'):
                 # For probabilistic models, get probability and compare to threshold
@@ -247,7 +217,6 @@ class MLIPBlocker:
                     cache.set(cache_key, block_decision, self.cache_timeout)
                 else:
                     self.block_ip(ip)
-            # cache.set(cache_key, block_decision, self.cache_timeout)
             
             # Update stats
             if block_decision:

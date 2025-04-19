@@ -1,5 +1,9 @@
 # Django Attack Blocker
 
+[![PyPI version](https://img.shields.io/pypi/v/django-attack-blocker)](https://pypi.org/project/django-attack-blocker/)
+![Downloads](https://static.pepy.tech/badge/django-attack-blocker)
+[![License](https://img.shields.io/github/license/benab04/django-attack-blocker)](LICENSE)
+
 A machine learning-based IP blocking library for Django applications to detect and prevent malicious network traffic.
 
 ## Overview
